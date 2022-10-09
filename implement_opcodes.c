@@ -7,7 +7,7 @@
  *
  * Return;
  */
-void push(stack_t **stack, unsigned int line_number)
+void _push(stack_t **stack, unsigned int line_nb, char *a_value)
 {
 
 	int n = 0;
@@ -40,7 +40,7 @@ void push(stack_t **stack, unsigned int line_number)
  *
  * Return;
  */
-void pall(stack_t **stack, unsigned int line_number)
+void _pall(stack_t **stack, unsigned int line_nb)
 {
 
 	stack_t *temp = NULL;
