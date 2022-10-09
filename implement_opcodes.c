@@ -7,7 +7,7 @@
  *
  * Return;
  */
-void _push(stack_t **stack, unsigned int line_nb, char *a_value)
+void push(stack_t **stack, unsigned int line_number)
 {
 
 	int n = 0;
@@ -40,7 +40,7 @@ void _push(stack_t **stack, unsigned int line_nb, char *a_value)
  *
  * Return;
  */
-void _pall(stack_t **stack, unsigned int line_nb)
+void pall(stack_t **stack, unsigned int line_number)
 {
 
 	stack_t *temp = NULL;
@@ -68,12 +68,3 @@ void _pall(stack_t **stack, unsigned int line_nb)
 	printf("%d\n", temp->n);
 }
 
-
-/**
- * pint - prints the value at the top of the stack
- * @stack: head of linkedlist
- * @line_number: line number of the instruction
- *
- * Return;
- */
-}
