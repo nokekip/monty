@@ -1,104 +1,68 @@
 #include "monty.h"
 
 /**
- * _push_to_stack - pushes an element to the stack.
- * @value: Value to add to the node
- * @actual_head: address of the head
- *
- */
-
-void _push_to_stack(stack_t **actual_head, unsigned int value)
-{
-	stack_t *new_node;
-	stack_t *current = *actual_head;
-
-	new_node = malloc(sizeof(stack_t));
-	if (new_node == NULL)
-		error_function(4, NULL, value);
-	new_node->n = value;
-	new_node->next = *actual_head;
-	new_node->prev = NULL;
-	if (current != NULL)
-		current->prev = new_node;
-	head = new_node;
-}
-
-/**
- * _print_all_stack - pushes an element to the stack.
- * @line_number: line number with the command
- * @actual_head: address of the head
- *
- */
-void _print_all_stack(stack_t **actual_head, unsigned int line_number)
-{
-	stack_t *tmp_node;
-
-	(void)line_number;
-
-	if (actual_head != NULL)
-	{
-		tmp_node = *actual_head;
-		while (tmp_node != NULL)
-		{
-			printf("%d\n", tmp_node->n);
-			tmp_node = tmp_node->next;
-		}
-	}
-}
-
-/**
- * free_dlistint - free a double linked list
- * @head: address of the head of double linked list
- *
- */
-
-void free_dlistint(stack_t *head)
-{
-	if (head != NULL)
-	{
-		if (head->next != NULL)
-			free_dlistint(head->next);
-		free(head);
-	}
-}
-
-/**
- * _print_top_stack - prints top element of stack
+ * _rotate_stack_bottom - rotates the stack to the bottom
  * @actual_head: head of the dlistint
  * @line_number: line number of the command
  *
  */
 
-void _print_top_stack(stack_t **actual_head, unsigned int line_number)
+void _rotate_stack_bottom(stack_t **actual_head, unsigned int line_number)
 {
 	stack_t *tmp_node;
+	int tmp_value = 0, tmp_value_n = 0, count = 0;
 
 	(void)line_number;
 	tmp_node = *actual_head;
-	if (*actual_head != NULL)
-		printf("%i\n", tmp_node->n);
-	else
-		error_function(6, NULL, line_number);
+	while (tmp_node)
+	{
+		tmp_value = tmp_node->n;
+		tmp_node = tmp_node->next;
+		count++;
+	}
+	tmp_node = *actual_head;
+	if (count > 1)
+	{
+		while (tmp_node->next)
+		{
+			tmp_value_n = tmp_node->n;
+			tmp_node->n = tmp_value;
+			tmp_value = tmp_value_n;
+			tmp_node = tmp_node->next;
+		}
+		tmp_node->n = tmp_value;
+	}
 }
 
 /**
- * _remove_top_stack - deletes the node at top in the stack
- * @actual_head: pointer to beggin
- * @line_number: indicate the line number of command
+ * _push_in_queue - pushes an element to the queue.
+ * @value: Value to add to the node
+ * @actual_head: address of the head
  *
  */
 
-void _remove_top_stack(stack_t **actual_head, unsigned int line_number)
+void _push_in_queue(stack_t **actual_head, unsigned int value)
 {
-	stack_t *tmp, *eraser;
 
-	tmp = *actual_head;
-	if (tmp == NULL)
-		error_function(7, NULL, line_number);
-	eraser = *actual_head;
-	*actual_head = tmp->next;
-	tmp = tmp->next;
-	if (tmp != NULL)
-		tmp->prev = NULL;
-	free(eraser);
+	stack_t *new_node;
+	stack_t *last;
+
+	new_node = malloc(sizeof(stack_t));
+	if (new_node == NULL)
+		error_function(4, NULL, value);
+	last = *actual_head;
+	new_node->n = value;
+	new_node->next = NULL;
+	if (*actual_head == NULL)
+	{
+		head = new_node;
+		new_node->prev = NULL;
+		return;
+	}
+	while (last->next != NULL)
+	{
+		last = last->next;
+	}
+	last->next = new_node;
+	new_node->prev = last;
 }
