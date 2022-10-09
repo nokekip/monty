@@ -1,108 +1,112 @@
 #include "monty.h"
 
 /**
- * interpret - primary starting point for program
- * @ac: argument count
- * @av: argument vector
- * Return: 1 on success, 0 on failure
+ * create_node - creates nodes for doubly linked lists
+ *
+ * @value: Interger representing the number to be added to list
+ * Return: new node
  */
 
-int interpret(int ac, char **av)
+stack_t *create_node(int value)
 {
-	if (ac != 2)
+	stack_t *new;
+
+	new = malloc(sizeof(stack_t));
+	if (new == NULL)
 	{
-		dprintf(STDERR_FILENO, USAGE);
-		return (EXIT_FAILURE);
+		dprintf(STDERR_FILENO, "Error: malloc failed\n");
+		exit(EXIT_FAILURE);
 	}
-
-	data()->fp = fopen(av[1], "r");
-	if (!data()->fp)
-	{
-
-		dprintf(STDERR_FILENO, ERR_FILE, av[1]);
-		free_data(1);
-		return (EXIT_FAILURE);
-	}
-
-	parse_opcodes();
-
-	return (EXIT_SUCCESS);
+	new->n = value;
+	new->next = NULL;
+	new->prev = NULL;
+	return (new);
 }
 
 /**
- * parse_opcodes - parses opcodes read from script file
+ * print_push_error - returns error on push
+ *
+ * @line_number: Interger representing the line number of of the opcode.
+ *
  */
-
-void parse_opcodes(void)
+void print_push_error(int line_number)
 {
-	ssize_t rbytes = 0;
-	size_t n = 0;
-	int i = 0;
-
-	while (1)
-	{
-		rbytes = getline(&(data()->line), &n, data()->fp);
-		if (rbytes == -1)
-			break;
-
-		data()->words = strtow(data()->line, " \t\n");
-		if (data()->words && data()->words[0] && data()->words[0][0] != '#')
-		{
-			for (i = 0; data()->words[i]; i++)
-				;
-			data()->num_words = i;
-			exec_opcode(data()->words[0]);
-		}
-
-		data()->line_number++;
-		free_data(0);
-	}
-
-	free_data(1);
+	dprintf(STDERR_FILENO, "L%d: usage: push integer\n", line_number);
+	exit(EXIT_FAILURE);
 }
 
 /**
- * exec_opcode - Executes given opcode if valid
- * @word: opcode string
- * Return: 1 on success, 0 on failure
+ * handle_push - handles the push opcode
+ * @value: string to be checked
+ * @line_number: Interger representing the line number of of the opcode.
+ *
  */
-
-int exec_opcode(char *word)
+void handle_push(char *value, unsigned int line_number)
 {
-	instruction_t opcodes[] = {
-		{"push", opcode_push},
-		{"pall", opcode_pall},
-		{"pint", opcode_pint},
-		{"pop", opcode_pop},
-		{"swap", opcode_swap},
-		{"nop", opcode_nop},
-		{"add", opcode_add},
-		{"sub", opcode_sub},
-		{"div", opcode_div},
-		{"mul", opcode_mul},
-		{"mod", opcode_mod},
-		{"pchar", opcode_pchar},
-		{"pstr", opcode_pstr},
-		{"rotl", opcode_rotl},
-		{"rotr", opcode_rotr},
-		{"stack", opcode_stack},
-		{"queue", opcode_queue},
+	int i;
+
+	if (value != NULL && value[0] == '-')
+	{
+		/* push pointer to the next character */
+		value++;
+	}
+
+	if (value == NULL)
+		print_push_error(line_number);
+
+	for (i = 0; value[i] != '\0'; i++)
+		if (isdigit(value[i]) == 0)
+			print_push_error(line_number);
+}
+
+/**
+ * find_function - finds the correct function to execute opcode
+ *
+ * @opcode: the instruction code
+ * @value: value to add to linked list
+ * @line_number: Interger representing the line number of of the opcode.
+ *
+ */
+void find_function(char *opcode, char *value, unsigned int line_number)
+{
+	int i;
+	stack_t *node;
+	instruction_t funct_list[] = {
+		{"push", push_stack}, {"pall", print_stack}, {"pint", print_top},
+		{"nop", nop},
+		{"pop", pop_top},
+		{"swap", swap_top},
+		{"div", div_top},
+		{"sub", sub_top},
+		{"mul", mul_top},
+		{"add", add_top},
+		{"mod", mod_top},
+		{"pchar", print_char},
+		{"pstr", print_string},
+		{"rotl", rotl},
+		{"rotr", rotr},
 		{NULL, NULL}
 	};
-
-	int i = 0;
-
-	for (; opcodes[i].opcode; i++)
+	if (opcode[0] == '#')
+		return;
+	if (strcmp(opcode, "push") == 0)
 	{
-		if (!strcmp(word, opcodes[i].opcode))
-		{
-			opcodes[i].f(&data()->stack, data()->line_number);
-			return (1);
-		}
+		handle_push(value, line_number);
+		node = create_node(atoi(value));
+		for (i = 0; funct_list[i].opcode;  i++)
+			if (strcmp(funct_list[i].opcode, opcode) == 0)
+			{
+				funct_list[i].f(&node, line_number);
+				return;
+			}
 	}
-  
-	dprintf(STDERR_FILENO, ERR_OPCODE, data()->line_number, word);
-	free_data(1);
+	else
+		for (i = 0; funct_list[i].opcode;  i++)
+			if (strcmp(funct_list[i].opcode, opcode) == 0)
+			{
+				funct_list[i].f(&head, line_number);
+				return;
+			}
+	dprintf(STDERR_FILENO, "L%d: unknown instruction %s\n", line_number, opcode);
 	exit(EXIT_FAILURE);
-	return (0);
 }
