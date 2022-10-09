@@ -1,66 +1,68 @@
 #include "monty.h"
-#include <string.h>
-
-void free_stack(stack_t **stack);
-int init_stack(stack_t **stack);
-int check_mode(stack_t *stack);
 
 /**
- * free_stack - Frees a stack_t stack.
- * @stack: A pointer to the top (stack) or
- *         bottom (queue) of a stack_t.
+ * _rotate_stack_bottom - rotates the stack to the bottom
+ * @actual_head: head of the dlistint
+ * @line_number: line number of the command
+ *
  */
-void free_stack(stack_t **stack)
-{
-	stack_t *tmp = *stack;
 
-	while (*stack)
+void _rotate_stack_bottom(stack_t **actual_head, unsigned int line_number)
+{
+	stack_t *tmp_node;
+	int tmp_value = 0, tmp_value_n = 0, count = 0;
+
+	(void)line_number;
+	tmp_node = *actual_head;
+	while (tmp_node)
 	{
-		tmp = (*stack)->next;
-		free(*stack);
-		*stack = tmp;
+		tmp_value = tmp_node->n;
+		tmp_node = tmp_node->next;
+		count++;
+	}
+	tmp_node = *actual_head;
+	if (count > 1)
+	{
+		while (tmp_node->next)
+		{
+			tmp_value_n = tmp_node->n;
+			tmp_node->n = tmp_value;
+			tmp_value = tmp_value_n;
+			tmp_node = tmp_node->next;
+		}
+		tmp_node->n = tmp_value;
 	}
 }
 
 /**
- * init_stack - Initializes a stack_t stack with beginning
- *              stack and ending queue nodes.
- * @stack: A pointer to an unitialized stack_t stack.
+ * _push_in_queue - pushes an element to the queue.
+ * @value: Value to add to the node
+ * @actual_head: address of the head
  *
- * Return: If an error occurs - EXIT_FAILURE.
- *         Otherwise - EXIT_SUCCESS.
  */
-int init_stack(stack_t **stack)
+
+void _push_in_queue(stack_t **actual_head, unsigned int value)
 {
-	stack_t *s;
 
-	s = malloc(sizeof(stack_t));
-	if (s == NULL)
-		return (malloc_error());
+	stack_t *new_node;
+	stack_t *last;
 
-	s->n = STACK;
-	s->prev = NULL;
-	s->next = NULL;
-
-	*stack = s;
-
-	return (EXIT_SUCCESS);
-}
-
-/**
- * check_mode - Checks if a stack_t linked list is in stack or queue mode.
- * @stack: A pointer to the top (stack) or bottom (queue)
- *         of a stack_t linked list.
- *
- * Return: If the stack_t is in stack mode - STACK (0).
- *         If the stack_t is in queue mode - QUEUE (1).
- *         Otherwise - 2.
- */
-int check_mode(stack_t *stack)
-{
-	if (stack->n == STACK)
-		return (STACK);
-	else if (stack->n == QUEUE)
-		return (QUEUE);
-	return (2);
+	new_node = malloc(sizeof(stack_t));
+	if (new_node == NULL)
+		error_function(4, NULL, value);
+	last = *actual_head;
+	new_node->n = value;
+	new_node->next = NULL;
+	if (*actual_head == NULL)
+	{
+		head = new_node;
+		new_node->prev = NULL;
+		return;
+	}
+	while (last->next != NULL)
+	{
+		last = last->next;
+	}
+	last->next = new_node;
+	new_node->prev = last;
 }
