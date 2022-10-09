@@ -11,7 +11,7 @@ int interpret(int ac, char **av)
 {
 	if (ac != 2)
 	{
-		dprintf(STDERR_FILENO, USAGE);
+		vprintf(STDERR_FILENO, USAGE);
 		return (EXIT_FAILURE);
 	}
 
