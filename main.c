@@ -1,53 +1,94 @@
 #include "monty.h"
 
-globales_t globalvar = {NULL, NULL, NULL};
+stack_t *head;
 
 /**
- * main - entry point for the CLI program
- * @argc: count of arguments passed to the program
- * @argv: pointer to an array of char pointers to arguments
- * Return: EXIT_SUCCESS or EXIT_FAILURE
+ * free_stack - function that frees a stack_t.
+ *
+ * Return: nothing
  */
 
+void free_stack(void)
+{
+	stack_t *temp;
+
+	while (head)
+	{
+		temp = head->next;
+		free(head);
+		head = temp;
+	}
+}
+
+/**
+ * pass_string - passes_string and calls the necesarry functions
+ * @str: string to pass
+ * @line_number: Interger representing the line number of of the opcode.
+ * Return: nothing
+ */
+
+void pass_string(char *str, unsigned int line_number)
+{
+	char *value;
+	char *opcode;
+
+	value = strtok(str, "\n \t\r");
+	opcode = value;
+	if (opcode == NULL)
+		return;
+
+	value = strtok(NULL, "\n \t\r");
+
+
+	find_function(opcode, value, line_number);
+}
+
+/**
+ * read_file - reads monty byte file
+ * @filename: file name to read
+ * Returns: nothing
+ */
+
+void read_file(char *filename)
+{
+	FILE *fd;
+	char *line_read;
+	size_t buffer_size;
+	unsigned int line_num;
+	int len;
+
+	fd = fopen(filename, "r");
+	if (fd == NULL)
+	{
+		dprintf(STDERR_FILENO, "Error: Can't open file %s\n", filename);
+		exit(EXIT_FAILURE);
+	}
+	line_read = NULL;
+	for (line_num = 1; (len = getline(&line_read,
+		&buffer_size, fd)) != -1 ; line_num++)
+		pass_string(line_read, line_num);
+
+	free(line_read);
+	fclose(fd);
+}
+
+
+/**
+ * main - entry point of the program
+ * @argc: number of arguments passed
+ * @argv: array of Strings of arguments
+ * Return: integer
+ */
 int main(int argc, char **argv)
 {
-	char *token = NULL;
-	size_t line_buf_size = 0;
-	int line_number = 0, flag = 0, flag2 = 0;
-	ssize_t line_size;
-	stack_t *stack = NULL;
 
 	if (argc != 2)
-		stderr_usage();
-	globalvar.fd = fopen(argv[1], "r");
-	if (globalvar.fd == NULL)
-		stderr_fopen(argv[1]);
-	line_size = getline(&globalvar.line_buf, &line_buf_size, globalvar.fd);
-	if (globalvar.line_buf[0] == '#')
-		line_size = getline(&globalvar.line_buf, &line_buf_size, globalvar.fd);
-	while (line_size >= 0)
-	{flag = 0;
-		flag2 = 0;
-		line_number++;
-		token = strtok(globalvar.line_buf, DELIM);
-		globalvar.token2 = strtok(NULL, DELIM);
-		if (token == NULL)
-		{flag2 = 1;
-			nop(&stack, line_number); }
-		if (flag2 == 0)
-		{
-			if (token[0] == '#')
-			{
-				line_size = getline(&globalvar.line_buf,
-						    &line_buf_size, globalvar.fd);
-				flag = 1; }}
-		if (flag == 0)
-		{get_builtin(token, &stack, line_number);
-			line_size = getline(&globalvar.line_buf, &line_buf_size,
-					    globalvar.fd); }}
-	free_dlistint(stack);
-	free(globalvar.line_buf);
-	globalvar.line_buf = NULL;
-	fclose(globalvar.fd);
+	{
+		dprintf(STDERR_FILENO, "USAGE: monty file\n");
+		exit(EXIT_FAILURE);
+	}
+
+	read_file(argv[1]);
+	free_stack();
 	return (EXIT_SUCCESS);
 }
